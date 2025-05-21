@@ -81,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Usuário simulado
       const mockUser: User = {
         id: "user-1",
-        name: "João Silva",
+        name: "Vitilio Sousa",
         email: email,
         role: "student",
         image: "/placeholder.svg?height=32&width=32",
@@ -110,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Usuário simulado
       const mockUser: User = {
         id: "user-1", // Usando o mesmo ID para garantir acesso aos projetos mockados
-        name: `${userData.name || "Novo"} Usuário`,
+        name: `${userData.name || "Novo"}`,
         email: userData.email || "usuario@exemplo.com",
         role: userData.role || "student",
         image: userData.image,

@@ -7,11 +7,10 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "./mode-toggle"
 import { usePathname } from "next/navigation"
-import { Menu, X, Lightbulb, Bell, User, FileText, MessageSquare, Heart, LogOut } from "lucide-react"
+import { Menu, X, Bell, User, FileText, MessageSquare, Heart, LogOut } from "lucide-react"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { useAuth } from "@/components/auth-provider"
 import { UserAccountNav } from "@/components/user-account-nav"
-
 import NotificationsIcon from "./NotificationsIcon"
 
 export default function Header() {
