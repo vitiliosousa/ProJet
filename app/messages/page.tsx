@@ -13,8 +13,31 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useMobileMedia } from "@/hooks/use-mobile"
 
+// Interfaces
+interface Message {
+  id: number
+  from: string
+  to: string
+  avatar: string
+  subject: string
+  content: string
+  date: string
+  project: string
+  isReceived: boolean
+  read?: boolean
+}
+
+interface Conversation {
+  contact: string
+  avatar: string | null
+  messages: Message[]
+  hasUnread: boolean
+  lastMessage: Message | null
+  project: string
+}
+
 // Mock data para mensagens individuais
-const mockMessageItems = [
+const mockMessageItems: Message[] = [
   {
     id: 1,
     from: "Maria Investimentos",
@@ -138,15 +161,15 @@ const mockMessageItems = [
 ]
 
 // Função para agrupar mensagens por contato
-function groupMessagesByContact(messages) {
+function groupMessagesByContact(messages: Message[]): Conversation[] {
   const conversations = {}
 
   // Agrupar mensagens por contato
   messages.forEach((message) => {
     const contactName = message.isReceived ? message.from : message.to
 
-    if (!conversations[contactName]) {
-      conversations[contactName] = {
+    if (!Object.prototype.hasOwnProperty.call(conversations, contactName)) {
+      (conversations as Record<string, Conversation>)[contactName] = {
         contact: contactName,
         avatar: message.isReceived ? message.avatar : null,
         messages: [],
@@ -156,36 +179,39 @@ function groupMessagesByContact(messages) {
       }
     }
 
-    conversations[contactName].messages.push(message)
+(conversations as Record<string, Conversation>)[contactName].messages.push(message)
 
     // Verificar se é a mensagem mais recente deste contato
+    const currentConversation = (conversations as Record<string, Conversation>)[contactName];
     if (
-      !conversations[contactName].lastMessage ||
-      new Date(message.date) > new Date(conversations[contactName].lastMessage.date)
+      !currentConversation.lastMessage ||
+      new Date(message.date) > new Date(currentConversation.lastMessage?.date || '')
     ) {
-      conversations[contactName].lastMessage = message
+(conversations as Record<string, Conversation>)[contactName].lastMessage = message
     }
 
     // Verificar se há mensagens não lidas
     if (message.isReceived && !message.read) {
-      conversations[contactName].hasUnread = true
+(conversations as Record<string, Conversation>)[contactName].hasUnread = true
     }
   })
 
   // Ordenar mensagens de cada conversa por data
   Object.values(conversations).forEach((conversation) => {
-    conversation.messages.sort((a, b) => new Date(a.date) - new Date(b.date))
+    (conversation as Conversation).messages.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
   })
 
   // Converter para array e ordenar por data da última mensagem (mais recente primeiro)
-  return Object.values(conversations).sort((a, b) => new Date(b.lastMessage.date) - new Date(a.lastMessage.date))
+  return (Object.values(conversations) as Conversation[]).sort((a, b) =>
+    new Date((b as Conversation).lastMessage?.date || '').getTime() - new Date((a as Conversation).lastMessage?.date || '').getTime()
+  )
 }
 
 // Formatar data relativa (hoje, ontem, etc.)
-function formatRelativeDate(dateString) {
+function formatRelativeDate(dateString: string): string {
   const date = new Date(dateString)
   const now = new Date()
-  const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24))
+  const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
 
   if (diffDays === 0) {
     return `Hoje, ${date.getHours()}:${date.getMinutes().toString().padStart(2, "0")}`
@@ -204,16 +230,16 @@ export default function MessagesPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const isMobile = useMobileMedia()
-  const messagesEndRef = useRef(null)
-  const inputRef = useRef(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
-  const [searchTerm, setSearchTerm] = useState("")
-  const [messageItems, setMessageItems] = useState(mockMessageItems)
-  const [conversations, setConversations] = useState([])
-  const [selectedContact, setSelectedContact] = useState(null)
-  const [replyText, setReplyText] = useState("")
-  const [showConversationList, setShowConversationList] = useState(true)
-  const [isTyping, setIsTyping] = useState(false)
+  const [searchTerm, setSearchTerm] = useState<string>("")
+  const [messageItems, setMessageItems] = useState<Message[]>(mockMessageItems)
+  const [conversations, setConversations] = useState<Conversation[]>([])
+  const [selectedContact, setSelectedContact] = useState<string | null>(null)
+  const [replyText, setReplyText] = useState<string>("")
+  const [showConversationList, setShowConversationList] = useState<boolean>(true)
+  const [isTyping, setIsTyping] = useState<boolean>(false)
 
   // Redirecionar para login se não estiver autenticado
   useEffect(() => {
@@ -228,11 +254,9 @@ export default function MessagesPage() {
     if (userParam) {
       // Encontrar ou criar conversa com este usuário
       setSelectedContact(userParam)
-      if (isMobile) {
-        setShowConversationList(false)
-      }
+      setShowConversationList(false)
     }
-  }, [searchParams, isMobile])
+  }, [searchParams])
 
   // Agrupar mensagens por contato ao carregar ou quando as mensagens mudarem
   useEffect(() => {
@@ -256,8 +280,8 @@ export default function MessagesPage() {
   const filteredConversations = conversations.filter(
     (conversation) =>
       conversation.contact.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      conversation.lastMessage.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      conversation.lastMessage.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      conversation.lastMessage?.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      conversation.lastMessage?.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
       conversation.project.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
@@ -266,18 +290,14 @@ export default function MessagesPage() {
   const conversationMessages = selectedConversation ? selectedConversation.messages : []
 
   // Marcar mensagens como lidas
-  const markConversationAsRead = (contactName) => {
+  const markConversationAsRead = (contactName: string) => {
     setMessageItems((prevMessages) =>
       prevMessages.map((message) =>
         message.isReceived && message.from === contactName ? { ...message, read: true } : message,
       ),
     )
     setSelectedContact(contactName)
-
-    // Em dispositivos móveis, mostrar apenas a conversa
-    if (isMobile) {
-      setShowConversationList(false)
-    }
+    setShowConversationList(false)
 
     // Focar no campo de resposta
     setTimeout(() => {
@@ -288,7 +308,7 @@ export default function MessagesPage() {
   }
 
   // Excluir conversa
-  const deleteConversation = (contactName) => {
+  const deleteConversation = (contactName: string) => {
     setMessageItems((prevMessages) =>
       prevMessages.filter(
         (message) => !(message.isReceived ? message.from === contactName : message.to === contactName),
@@ -315,11 +335,11 @@ export default function MessagesPage() {
       id: Date.now(),
       from: "Você",
       to: selectedContact,
-      avatar: user.image || "/placeholder.svg?height=40&width=40",
-      subject: `Re: ${selectedConversation.lastMessage.subject}`,
+      avatar: user?.image || "/placeholder.svg?height=40&width=40",
+      subject: `Re: ${selectedConversation?.lastMessage?.subject || 'No subject'}`,
       content: replyText,
       date: new Date().toISOString(),
-      project: selectedConversation.project,
+      project: selectedConversation?.project || 'No project',
       isReceived: false,
       read: true,
     }
@@ -339,11 +359,11 @@ export default function MessagesPage() {
             id: Date.now() + 1,
             from: selectedContact,
             to: "Você",
-            avatar: selectedConversation.avatar || "/placeholder.svg?height=40&width=40",
+            avatar: selectedConversation?.avatar || "/placeholder.svg?height=40&width=40",
             subject: `Re: ${newMessage.subject}`,
             content: `Obrigado pela sua resposta! Vamos continuar a conversa em breve.`,
             date: new Date().toISOString(),
-            project: selectedConversation.project,
+            project: selectedConversation?.project || 'No project',
             isReceived: true,
             read: false,
           }
@@ -383,8 +403,8 @@ export default function MessagesPage() {
           </div>
         )}
 
-        <div className="grid gap-4 md:grid-cols-[350px_1fr]">
-          {/* Lista de conversas - visível em desktop ou quando showConversationList é true em mobile */}
+        <div className="grid md:grid-cols-[350px,1fr] gap-4">
+          {/* Lista de conversas - sempre visível em desktop, condicional em mobile */}
           {(showConversationList || !isMobile) && (
             <Card className="rounded-xl glass-card animate-fadeIn">
               <CardHeader className="py-3">
@@ -409,7 +429,7 @@ export default function MessagesPage() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                               <h3 className={`font-medium truncate ${conversation.hasUnread ? "font-semibold" : ""}`}>
-                                {conversation.contact === "Você" ? conversation.lastMessage.to : conversation.contact}
+                                {conversation.contact === "Você" ? conversation.lastMessage?.to : conversation.contact}
                               </h3>
                               {conversation.hasUnread && (
                                 <Badge variant="default" className="bg-primary">
@@ -417,11 +437,11 @@ export default function MessagesPage() {
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-sm font-medium truncate">{conversation.lastMessage.subject}</p>
-                            <p className="text-xs text-muted-foreground truncate">{conversation.lastMessage.content}</p>
+                            <p className="text-sm font-medium truncate">{conversation.lastMessage?.subject}</p>
+                            <p className="text-xs text-muted-foreground truncate">{conversation.lastMessage?.content}</p>
                             <div className="flex items-center gap-2 mt-1">
                               <span className="text-xs text-muted-foreground">
-                                {formatRelativeDate(conversation.lastMessage.date)}
+                                {conversation.lastMessage ? formatRelativeDate(conversation.lastMessage.date) : ''}
                               </span>
                               <span className="text-xs text-muted-foreground">•</span>
                               <span className="text-xs text-muted-foreground">{conversation.project}</span>
@@ -478,12 +498,10 @@ export default function MessagesPage() {
             </Card>
           )}
 
-          {/* Visualização da conversa selecionada - visível em desktop ou quando showConversationList é false em mobile */}
-          {(!showConversationList || !isMobile) && (
-            <Card className={`rounded-xl glass-card animate-fadeIn ${isMobile ? "md:col-span-2" : ""}`}>
-              {selectedContact ? (
-                <>
-                  <CardHeader className="py-3 border-b">
+          {/* Visualização da conversa selecionada - visível em desktop ou quando uma conversa está selecionada */}
+          {(!showConversationList || !isMobile) && selectedContact && (
+            <Card className="rounded-xl glass-card animate-fadeIn">
+              <CardHeader className="py-3 border-b">
                     <div className="flex justify-between items-center">
                       {isMobile && (
                         <Button variant="ghost" size="icon" onClick={handleBackToList} className="mr-2">
@@ -609,8 +627,8 @@ export default function MessagesPage() {
                       </div>
                     </div>
                   </CardContent>
-                </>
-              ) : (
+                </Card>
+              )} : (
                 <div className="flex flex-col items-center justify-center py-24 text-center">
                   {isMobile && (
                     <Button variant="ghost" size="icon" onClick={handleBackToList} className="absolute top-4 left-4">
@@ -625,11 +643,9 @@ export default function MessagesPage() {
                     Escolha uma conversa da lista para visualizar as mensagens
                   </p>
                 </div>
-              )}
-            </Card>
-          )}
+              )
+            </div>
         </div>
       </div>
-    </div>
   )
 }

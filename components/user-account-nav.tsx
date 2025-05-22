@@ -38,7 +38,7 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 flex items-center gap-2 px-2 group">
           <Avatar className="h-8 w-8 border border-border">
-            <AvatarImage src="https://github.com/vitiliosousa.jpg" alt={user.name} />
+            <AvatarImage src="/project/4.jpg" alt={user.name} />
             <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col items-start text-left">

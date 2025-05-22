@@ -84,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         name: "Vitilio Sousa",
         email: email,
         role: "student",
-        image: "/placeholder.svg?height=32&width=32",
+        image: "/project/4.jpg",
       }
 
       setUser(mockUser)

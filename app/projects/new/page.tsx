@@ -188,7 +188,7 @@ export default function NewProjectPage() {
                   <Button variant="outline" type="button" onClick={() => router.push("/projects/my-projects")}>
                     Cancelar
                   </Button>
-                  <Button type="button" onClick={() => document.querySelector('[data-value="details"]')?.click()}>
+                  <Button type="button" onClick={() => (document.querySelector('[data-value="details"]') as HTMLElement)?.click()}>
                     Próximo
                   </Button>
                 </CardFooter>
@@ -270,11 +270,11 @@ export default function NewProjectPage() {
                   <Button
                     variant="outline"
                     type="button"
-                    onClick={() => document.querySelector('[data-value="basic"]')?.click()}
+                    onClick={() => (document.querySelector('[data-value="basic"]') as HTMLElement)?.click()}
                   >
                     Anterior
                   </Button>
-                  <Button type="button" onClick={() => document.querySelector('[data-value="media"]')?.click()}>
+                  <Button type="button" onClick={() => (document.querySelector('[data-value="media"]') as HTMLElement)?.click()}>
                     Próximo
                   </Button>
                 </CardFooter>
@@ -348,7 +348,7 @@ export default function NewProjectPage() {
                   <Button
                     variant="outline"
                     type="button"
-                    onClick={() => document.querySelector('[data-value="details"]')?.click()}
+                    onClick={() => (document.querySelector('[data-value="details"]') as HTMLElement)?.click()}
                   >
                     Anterior
                   </Button>

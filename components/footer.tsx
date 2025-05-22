@@ -1,5 +1,7 @@
 import Link from "next/link"
 import { Lightbulb } from "lucide-react"
+import Image from "next/image"
+import projet from "@/public/projet.svg"
 
 export default function Footer() {
   return (
@@ -8,13 +10,10 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           <div className="flex flex-col gap-2">
             <Link href="/" className="flex items-center gap-2">
-              <div className="rounded-full bg-primary/10 p-1.5">
-                <Lightbulb className="h-5 w-5 text-primary" />
-              </div>
-              <span className="font-bold text-xl">ProjetoConnect</span>
+              <Image src={projet} alt="" className="size-28" />
             </Link>
             <p className="text-sm text-muted-foreground">
-              Conectando estudantes universitários a investidores para transformar projetos acadêmicos em realidade.
+              Conectando ideias a investidores para transformar projectos em realidade.
             </p>
           </div>
           <div className="grid gap-2">
@@ -54,7 +53,7 @@ export default function Footer() {
         </div>
         <div className="mt-8 border-t pt-6">
           <p className="text-center text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} ProjetoConnect. Todos os direitos reservados.
+            &copy; {new Date().getFullYear()} ProJet. Todos os direitos reservados.
           </p>
         </div>
       </div>

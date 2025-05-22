@@ -1,6 +1,7 @@
 
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "./ui/dropdown-menu"
-import { Bell, Link } from "lucide-react"
+import { Bell } from "lucide-react"
+import Link from "next/link"
 import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
 
@@ -66,8 +67,8 @@ export default function NotificationsIcon() {
                       </DropdownMenuItem>
                     </div>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild className="justify-center">
-                      <Link href="/notifications">Ver todas as notificações</Link>
+                    <DropdownMenuItem className="justify-center w-full" asChild>
+                      <Link href="/notifications" className="w-full text-center">Ver todas as notificações</Link>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

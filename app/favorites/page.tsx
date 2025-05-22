@@ -23,7 +23,7 @@ const mockFavoriteProjects = [
     likes: 24,
     views: 124,
     messages: 5,
-    image: "/placeholder.svg?height=200&width=350",
+    image: "/project/1.jpg",
     addedAt: "10/05/2023",
   },
   {
@@ -37,7 +37,7 @@ const mockFavoriteProjects = [
     likes: 32,
     views: 87,
     messages: 3,
-    image: "/placeholder.svg?height=200&width=350",
+    image: "/project/3.jpg",
     addedAt: "12/05/2023",
   },
   {
@@ -51,7 +51,7 @@ const mockFavoriteProjects = [
     likes: 41,
     views: 156,
     messages: 8,
-    image: "/placeholder.svg?height=200&width=350",
+    image: "/project/5.jpg",
     addedAt: "15/05/2023",
   },
 ]
@@ -126,7 +126,7 @@ export default function FavoritesPage() {
                       <CardContent className="p-4">
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <h3 className="font-medium line-clamp-1">{project.title}</h3>
+                            <h3 className="font-semibold line-clamp-2 text-xl">{project.title}</h3>
                             <Button
                               variant="ghost"
                               size="icon"

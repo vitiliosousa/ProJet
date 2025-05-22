@@ -10,8 +10,21 @@ import { useAuth } from "@/components/auth-provider"
 import { Eye, Heart, MessageSquare, Plus, FileText, BarChart, Edit, Trash2, Loader2 } from "lucide-react"
 import Link from "next/link"
 
+interface Project {
+  id: number
+  authorId: string
+  title: string
+  description: string
+  area: string
+  status: "Ativo" | "Rascunho"
+  views: number
+  likes: number
+  messages: number
+  lastUpdated: string
+}
+
 // Mock data for student projects
-const mockStudentProjects = [
+const mockStudentProjects: Project[] = [
   {
     id: 1,
     authorId: "user-1", // ID do usuário logado
@@ -54,7 +67,7 @@ export default function MyProjectsPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
-  const [projects, setProjects] = useState([])
+  const [projects, setProjects] = useState<Project[]>([])
 
   // Redirecionar para login se não estiver autenticado
   useEffect(() => {
@@ -91,7 +104,7 @@ export default function MyProjectsPage() {
     return (
       <div className="container py-8 md:py-12 flex flex-col items-center justify-center min-h-[60vh]">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        <p className="mt-4 text-muted-foreground">Carregando seus projetos...</p>
+        <p className="mt-4 text-muted-foreground">Carregando seus projectos...</p>
       </div>
     )
   }
@@ -105,11 +118,11 @@ export default function MyProjectsPage() {
     <div className="container py-8 md:py-12">
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight gradient-heading">Meus Projetos</h1>
+          <h1 className="text-3xl font-bold tracking-tight gradient-heading">Meus Projectos</h1>
           <Link href="/projects/new">
             <Button className="button-hover-effect">
               <Plus className="mr-2 h-4 w-4" />
-              Novo Projeto
+              Novo Projecto
             </Button>
           </Link>
         </div>
@@ -117,7 +130,7 @@ export default function MyProjectsPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Projetos</CardTitle>
+              <CardTitle className="text-sm font-medium">Projectos</CardTitle>
               <div className="h-4 w-4 text-muted-foreground">
                 <FileText />
               </div>

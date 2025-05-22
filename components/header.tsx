@@ -104,7 +104,7 @@ export default function Header() {
                 <div className="flex items-center gap-3 p-2">
                   <div className="h-10 w-10 overflow-hidden rounded-full">
                     <img
-                      src={user.image || "/placeholder.svg?height=40&width=40"}
+                      src={user.image || "/project/4.jpg"}
                       alt={user.name}
                       className="h-full w-full object-cover"
                     />

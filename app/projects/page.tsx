@@ -12,122 +12,10 @@ import AuthCheck from "@/components/auth-check"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { useAuth } from "@/components/auth-provider"
+import mockProjects from "@/data/mockProjects"
+import areas from "@/data/areas"
+import Image from "next/image"
 
-// Mock data for projects
-const mockProjects = [
-  {
-    id: 1,
-    title: "Sistema de Monitoramento Ambiental IoT",
-    description:
-      "Dispositivo IoT para monitoramento de qualidade do ar e água em tempo real, utilizando sensores de baixo custo e transmissão de dados via LoRaWAN.",
-    area: "Engenharia Ambiental",
-    author: "Carlos Silva",
-    university: "Universidade Federal",
-    likes: 24,
-    image: "/placeholder.svg?height=200&width=350",
-  },
-  {
-    id: 2,
-    title: "Aplicativo de Assistência Médica para Idosos",
-    description:
-      "Plataforma mobile que auxilia idosos no gerenciamento de medicamentos, consultas médicas e monitoramento de sinais vitais com interface simplificada.",
-    area: "Ciência da Computação",
-    author: "Ana Pereira",
-    university: "Universidade Estadual",
-    likes: 18,
-    image: "/placeholder.svg?height=200&width=350",
-  },
-  {
-    id: 3,
-    title: "Plataforma de Microcrédito para Pequenos Empreendedores",
-    description:
-      "Sistema financeiro que conecta investidores a pequenos empreendedores locais, facilitando o acesso a microcrédito com taxas justas.",
-    area: "Administração",
-    author: "Pedro Oliveira",
-    university: "Faculdade de Economia",
-    likes: 32,
-    image: "/placeholder.svg?height=200&width=350",
-  },
-  {
-    id: 4,
-    title: "Aplicativo de Compartilhamento de Caronas Universitárias",
-    description:
-      "Plataforma que conecta estudantes da mesma universidade para compartilhar caronas, reduzindo custos e impacto ambiental.",
-    area: "Engenharia de Software",
-    author: "Mariana Costa",
-    university: "Instituto Tecnológico",
-    likes: 15,
-    image: "/placeholder.svg?height=200&width=350",
-  },
-  {
-    id: 5,
-    title: "Sistema de Gestão de Resíduos Sólidos",
-    description:
-      "Plataforma para otimização da coleta de resíduos em cidades inteligentes, utilizando sensores e algoritmos de roteamento.",
-    area: "Engenharia Civil",
-    author: "Rafael Mendes",
-    university: "Universidade Politécnica",
-    likes: 27,
-    image: "/placeholder.svg?height=200&width=350",
-  },
-  {
-    id: 6,
-    title: "Aplicativo de Realidade Aumentada para Educação",
-    description:
-      "Ferramenta educacional que utiliza realidade aumentada para visualização de conceitos complexos em ciências e matemática.",
-    area: "Tecnologia Educacional",
-    author: "Juliana Ferreira",
-    university: "Faculdade de Educação",
-    likes: 41,
-    image: "/placeholder.svg?height=200&width=350",
-  },
-  {
-    id: 7,
-    title: "Plataforma de Análise de Dados para Agricultura de Precisão",
-    description:
-      "Sistema que utiliza dados de satélite e sensores para otimizar o uso de recursos em fazendas, aumentando a produtividade e reduzindo o impacto ambiental.",
-    area: "Agronomia",
-    author: "Lucas Martins",
-    university: "Universidade Rural",
-    likes: 36,
-    image: "/placeholder.svg?height=200&width=350",
-  },
-  {
-    id: 8,
-    title: "Aplicativo de Diagnóstico Médico com IA",
-    description:
-      "Ferramenta de suporte à decisão médica que utiliza inteligência artificial para auxiliar no diagnóstico de doenças a partir de sintomas e exames.",
-    area: "Medicina",
-    author: "Camila Santos",
-    university: "Faculdade de Medicina",
-    likes: 53,
-    image: "/placeholder.svg?height=200&width=350",
-  },
-  {
-    id: 9,
-    title: "Sistema de Monitoramento de Estruturas Civis",
-    description:
-      "Rede de sensores para monitoramento contínuo da integridade de pontes e edifícios, alertando sobre riscos estruturais em tempo real.",
-    area: "Engenharia Civil",
-    author: "Bruno Costa",
-    university: "Instituto de Engenharia",
-    likes: 29,
-    image: "/placeholder.svg?height=200&width=350",
-  },
-]
-
-// Areas for filtering
-const areas = [
-  "Todas as Áreas",
-  "Engenharia Ambiental",
-  "Ciência da Computação",
-  "Administração",
-  "Engenharia de Software",
-  "Engenharia Civil",
-  "Tecnologia Educacional",
-  "Medicina",
-  "Agronomia",
-]
 
 export default function ProjectsPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -230,12 +118,12 @@ export default function ProjectsPage() {
         <div className="flex flex-col gap-2 animate-fadeIn">
           <div className="flex items-center gap-2">
             <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-sm text-primary">
-              <Sparkles className="h-4 w-4 inline mr-1" /> Projetos Inovadores
+              <Sparkles className="h-4 w-4 inline mr-1" /> Projectos Inovadores
             </div>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight gradient-heading">Descubra Projetos Universitários</h1>
+          <h1 className="text-3xl font-bold tracking-tight gradient-heading">Descubra Projectos</h1>
           <p className="text-muted-foreground max-w-3xl">
-            Explore projetos de estudantes universitários e encontre oportunidades de investimento em ideias inovadoras
+            Explore projectos encontre oportunidades de investimento em ideias inovadoras
             que podem transformar o futuro.
           </p>
         </div>
@@ -316,16 +204,19 @@ export default function ProjectsPage() {
                 style={{ animationDelay: `${0.1 * ((index % 3) + 1)}s` }}
               >
                 <div className="relative overflow-hidden group">
-                  <img
-                    src={project.image || "/placeholder.svg"}
+                  <Image
+                    src={project.image}
                     alt={project.title}
+                    width={500}
+                    height={300}
                     className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
+                    priority={index < 6}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <Badge className="absolute top-2 right-2 z-10">{project.area}</Badge>
                 </div>
                 <CardHeader className="p-4">
-                  <CardTitle className="line-clamp-1 group-hover:text-primary transition-colors">
+                  <CardTitle className="line-clamp-2 text-xl group-hover:text-primary transition-colors">
                     {project.title}
                   </CardTitle>
                   <div className="text-sm text-muted-foreground">

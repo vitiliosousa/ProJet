@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/components/auth-provider'
@@ -15,15 +15,27 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false)
 
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    university: 'Universidade Federal',
-    course: 'Engenharia de Software',
+    name: '',
+    email: '',
+    university: 'Instituto Superior de Transportes e Comunicações',
+    course: 'Engenharia Informatica e de Telecomunicações',
     bio: 'Estudante de engenharia apaixonado por tecnologia e inovação.',
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   })
+
+  useEffect(() => {
+    if (!user) {
+      router.push('/login')
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        name: user.name || '',
+        email: user.email || ''
+      }))
+    }
+  }, [user, router])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -61,7 +73,6 @@ export default function ProfilePage() {
   }
 
   if (!user) {
-    router.push('/login')
     return null
   }
 
