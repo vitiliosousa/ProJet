@@ -28,33 +28,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
 
-  // Simular verificação de autenticação no carregamento inicial
   useEffect(() => {
     const checkAuth = () => {
-      // Em uma aplicação real, verificaríamos um token JWT ou sessão
-      const storedUser = localStorage.getItem("user")
+      const storedUser = sessionStorage.getItem("user")
 
       if (storedUser) {
         try {
           const parsedUser = JSON.parse(storedUser)
           setUser(parsedUser)
         } catch (e) {
-          localStorage.removeItem("user")
+          sessionStorage.removeItem("user")
           setUser(null)
         }
       } else {
         setUser(null)
       }
 
-      // Sempre definir isLoading como false no final da verificação
       setIsLoading(false)
     }
 
-    // Pequeno atraso para simular verificação de autenticação
     setTimeout(checkAuth, 500)
   }, [])
 
-  // Redirecionar usuários não autenticados apenas de páginas protegidas específicas
   useEffect(() => {
     const protectedRoutes = [
       "/projects/new",
@@ -75,22 +70,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true)
 
     try {
-      // Simulação de login - em uma aplicação real, isso seria uma chamada API
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
-      // Usuário simulado
       const mockUser: User = {
         id: "user-1",
         name: "Vitilio Sousa",
-        email: email,
+        email,
         role: "student",
         image: "/project/4.jpg",
       }
 
       setUser(mockUser)
-      localStorage.setItem("user", JSON.stringify(mockUser))
-
-      // Redirecionar para a página de projetos
+      sessionStorage.setItem("user", JSON.stringify(mockUser))
       router.push("/projects")
     } catch (error) {
       console.error("Erro ao fazer login:", error)
@@ -104,12 +95,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true)
 
     try {
-      // Simulação de registro - em uma aplicação real, isso seria uma chamada API
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
-      // Usuário simulado
       const mockUser: User = {
-        id: "user-1", // Usando o mesmo ID para garantir acesso aos projetos mockados
+        id: "user-1",
         name: `${userData.name || "Novo"}`,
         email: userData.email || "usuario@exemplo.com",
         role: userData.role || "student",
@@ -117,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setUser(mockUser)
-      localStorage.setItem("user", JSON.stringify(mockUser))
+      sessionStorage.setItem("user", JSON.stringify(mockUser))
       router.push("/projects")
     } catch (error) {
       console.error("Erro ao registrar:", error)
@@ -129,7 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setUser(null)
-    localStorage.removeItem("user")
+    sessionStorage.removeItem("user")
     router.push("/projects")
   }
 

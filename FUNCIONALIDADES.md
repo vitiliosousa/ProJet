@@ -20,7 +20,7 @@ Este documento detalha todas as funcionalidades implementadas no ProjetoConnect,
 
 - **Tipos de Conta**: Estudante (compartilha projetos) ou Investidor (busca projetos)
 - **Campos Obrigatórios**: Nome, e-mail, senha, tipo de conta
-- **Campos Opcionais**: Universidade (estudantes), empresa (investidores)
+- **Campos Opcionais**: Universidade (estudantes), empresa, opcional (investidores)
 - **Validação**: Verificação de formato de e-mail e força da senha
 - **Termos de Uso**: Aceitação obrigatória dos termos de serviço
 
