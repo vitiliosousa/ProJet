@@ -1,0 +1,40 @@
+[33mcommit 64b8c362d16e80d0722b78e5804ce94229d3d81c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeat/crud-api-projetos[m[33m, [m[1;31morigin/feat/crud-api-projetos[m[33m)[m
+Author: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.github.com>
+Date:   Thu Jul 10 11:38:11 2025 +0000
+
+    feat: Implementa API CRUD para projetos e atualiza frontend
+    
+    - Adiciona endpoints GET, POST, PUT, DELETE para /api/projects.
+    - Adiciona endpoints GET, PUT, DELETE para /api/projects/[id].
+    - Atualiza a página de listagem de projetos (app/projects/page.tsx) para consumir dados da API.
+    - Atualiza a página 'Meus Projetos' (app/projects/my-projects/page.tsx) para consumir dados da API e permitir a exclusão de projetos.
+
+[33mcommit 96ffd3a07a74998b48c39fa99a9739503343e80d[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m
+Author: Vitilio Sousa <@vitiliosousa>
+Date:   Thu Jul 10 04:27:03 2025 +0200
+
+    upload images fixed error
+
+[33mcommit ad2310d0c1f6733eef437c857bb95e1b20609175[m
+Author: Vitilio Sousa <@vitiliosousa>
+Date:   Tue Jul 1 16:05:39 2025 +0200
+
+    session storage
+
+[33mcommit 0444a1ccc9a64469aa642dc139778cd581102525[m
+Author: Vitilio Sousa <@vitiliosousa>
+Date:   Thu May 22 05:27:37 2025 +0200
+
+    some ajusts
+
+[33mcommit 05ecb82b03d719bd47c27e85e558847c4c8ab610[m
+Author: Vitilio Sousa <@vitiliosousa>
+Date:   Wed May 21 12:15:16 2025 +0200
+
+    mais componetizado
+
+[33mcommit 78dd698b8e67567333c1f37bf6d96017eac5d591[m
+Author: Vitilio Sousa <@vitiliosousa>
+Date:   Wed May 21 11:52:39 2025 +0200
+
+    first commit
