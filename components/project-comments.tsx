@@ -103,101 +103,158 @@ const mockComments: Comment[] = [
     ],
   },
 ]
+import { useAuth } from "@/components/auth-provider"
+import { useEffect } from "react"
 
-export default function ProjectComments() {
-  const [comments, setComments] = useState<Comment[]>(mockComments)
+interface ProjectCommentsProps {
+  projectId: string
+}
+
+export default function ProjectComments({ projectId }: ProjectCommentsProps) {
+  const [comments, setComments] = useState<Comment[]>(mockComments) // Start with mock for now
+  const [isLoading, setIsLoading] = useState(false) // Set to false if using mock initially
+  const [error, setError] = useState<string | null>(null)
   const [newComment, setNewComment] = useState("")
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [replyContent, setReplyContent] = useState("")
-  const [isAuthenticated, setIsAuthenticated] = useState(false) // Simulação - em produção, isso viria de um hook de autenticação
+  const { isAuthenticated, user } = useAuth()
 
-  const handleAddComment = () => {
-    if (!newComment.trim()) return
+  // TODO: Implement API fetching for comments when backend is ready
+  // useEffect(() => {
+  //   const fetchComments = async () => {
+  //     setIsLoading(true);
+  //     setError(null);
+  //     try {
+  //       // const response = await fetch(`/api/projects/${projectId}/comments`);
+  //       // if (!response.ok) throw new Error("Failed to fetch comments");
+  //       // const data = await response.json();
+  //       // setComments(data);
+  //       await new Promise(resolve => setTimeout(resolve, 700)); // Simulate API delay
+  //       setComments(mockComments); // Using mock for now
+  //     } catch (err: any) {
+  //       setError(err.message || "Could not load comments.");
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+  //   if (projectId) {
+  //     fetchComments();
+  //   }
+  // }, [projectId]);
 
-    const comment: Comment = {
-      id: `${Date.now()}`,
+  const handleAddComment = async () => {
+    if (!newComment.trim() || !isAuthenticated || !user) return
+
+    const optimisticComment: Comment = {
+      id: `temp-${Date.now()}`,
       author: {
-        name: "João Silva", // Usuário logado simulado
-        avatar: "/placeholder.svg?height=40&width=40",
-        role: "Estudante",
+        name: user.user_metadata?.full_name || user.email || "Usuário",
+        avatar: user.user_metadata?.avatar_url || "/placeholder-user.jpg",
+        role: "Usuário",
       },
       content: newComment,
       createdAt: "Agora mesmo",
       likes: 0,
+      isLiked: false,
     }
 
-    setComments([comment, ...comments])
+    setComments(prevComments => [optimisticComment, ...prevComments])
     setNewComment("")
+
+    try {
+      console.log("Comment to save (simulated):", { projectId, content: newComment, userId: user.id })
+      // await fetch(`/api/projects/${projectId}/comments`, { /* ... */ });
+      await new Promise(resolve => setTimeout(resolve, 500))
+      // Update optimisticComment.id with real ID from backend if necessary
+    } catch (err) {
+      console.error("Failed to save comment:", err)
+      setComments(prevComments => prevComments.filter(c => c.id !== optimisticComment.id))
+    }
   }
 
-  const handleAddReply = (commentId: string) => {
-    if (!replyContent.trim()) return
+  const handleAddReply = async (commentId: string) => {
+    if (!replyContent.trim() || !isAuthenticated || !user) return
 
-    const reply: Comment = {
-      id: `${commentId}-${Date.now()}`,
+    const optimisticReply: Comment = {
+      id: `temp-reply-${Date.now()}`,
       author: {
-        name: "João Silva", // Usuário logado simulado
-        avatar: "/placeholder.svg?height=40&width=40",
-        role: "Estudante",
+        name: user.user_metadata?.full_name || user.email || "Usuário",
+        avatar: user.user_metadata?.avatar_url || "/placeholder-user.jpg",
+        role: "Usuário",
       },
       content: replyContent,
       createdAt: "Agora mesmo",
       likes: 0,
+      isLiked: false,
     }
 
-    const updatedComments = comments.map((comment) => {
-      if (comment.id === commentId) {
+    setComments(prevComments =>
+      prevComments.map(comment =>
+        comment.id === commentId
+          ? { ...comment, replies: [...(comment.replies || []), optimisticReply] }
+          : comment,
+      ),
+    )
+    setReplyContent("")
+    setReplyingTo(null)
+
+    try {
+      console.log("Reply to save (simulated):", { commentId, content: replyContent, userId: user.id })
+      // await fetch(`/api/projects/${projectId}/comments/${commentId}/replies`, { /* ... */ });
+      await new Promise(resolve => setTimeout(resolve, 500))
+    } catch (err) {
+      console.error("Failed to save reply:", err)
+      // Revert optimistic update for reply
+    }
+  }
+
+  const handleLikeComment = async (commentId: string, isReply = false, parentId?: string) => {
+    if (!isAuthenticated) return
+
+    const newComments = comments.map(comment => {
+      if (!isReply && comment.id === commentId) {
         return {
           ...comment,
-          replies: [...(comment.replies || []), reply],
+          likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1,
+          isLiked: !comment.isLiked,
+        }
+      } else if (isReply && parentId === comment.id && comment.replies) {
+        return {
+          ...comment,
+          replies: comment.replies.map(reply =>
+            reply.id === commentId
+              ? { ...reply, likes: reply.isLiked ? reply.likes - 1 : reply.likes + 1, isLiked: !reply.isLiked }
+              : reply,
+          ),
         }
       }
       return comment
     })
+    setComments(newComments)
 
-    setComments(updatedComments)
-    setReplyContent("")
-    setReplyingTo(null)
+    try {
+      console.log(`Like toggled for comment/reply ${commentId} (simulated)`);
+      // await fetch(`/api/comments/${commentId}/like`, { method: 'POST' });
+      await new Promise(resolve => setTimeout(resolve, 300));
+    } catch (err) {
+      console.error("Failed to update like status:", err);
+      // Revert optimistic like update
+    }
   }
 
-  const handleLikeComment = (commentId: string, isReply = false, parentId?: string) => {
-    if (!isAuthenticated) return
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        {/* Skeleton loading state */}
+        <div className="h-8 w-1/3 bg-muted rounded animate-pulse"></div>
+        <Card className="rounded-xl glass-card"><CardContent className="p-4 space-y-2"><div className="h-20 bg-muted rounded animate-pulse"></div><div className="h-8 w-1/4 bg-muted rounded animate-pulse ml-auto"></div></CardContent></Card>
+        {[1, 2].map(i => (<Card key={i} className="rounded-xl glass-card animate-pulse"><CardContent className="p-4 space-y-3"><div className="flex items-center gap-2"><div className="h-10 w-10 rounded-full bg-muted"></div><div className="space-y-1"><div className="h-4 w-24 bg-muted rounded"></div><div className="h-3 w-32 bg-muted rounded"></div></div></div><div className="h-4 w-full bg-muted rounded"></div><div className="h-4 w-3/4 bg-muted rounded"></div><div className="flex items-center gap-4 pt-1"><div className="h-6 w-16 bg-muted rounded"></div><div className="h-6 w-20 bg-muted rounded"></div></div></CardContent></Card>))}
+      </div>
+    )
+  }
 
-    if (!isReply) {
-      setComments(
-        comments.map((comment) => {
-          if (comment.id === commentId) {
-            return {
-              ...comment,
-              likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1,
-              isLiked: !comment.isLiked,
-            }
-          }
-          return comment
-        }),
-      )
-    } else if (parentId) {
-      setComments(
-        comments.map((comment) => {
-          if (comment.id === parentId && comment.replies) {
-            return {
-              ...comment,
-              replies: comment.replies.map((reply) => {
-                if (reply.id === commentId) {
-                  return {
-                    ...reply,
-                    likes: reply.isLiked ? reply.likes - 1 : reply.likes + 1,
-                    isLiked: !reply.isLiked,
-                  }
-                }
-                return reply
-              }),
-            }
-          }
-          return comment
-        }),
-      )
-    }
+  if (error) {
+    return <Card className="rounded-xl glass-card"><CardContent className="p-4 text-center text-destructive"><p>Erro: {error}</p></CardContent></Card>
   }
 
   return (
@@ -208,38 +265,22 @@ export default function ProjectComments() {
         </h3>
       </div>
 
-      {/* Formulário de comentário */}
       <Card className="rounded-xl glass-card">
         <CardContent className="p-4 space-y-4">
-          <AuthCheck
-            action="comentar neste projeto"
-            fallback={
-              <div className="flex flex-col space-y-2">
-                <Textarea placeholder="Faça login para adicionar um comentário..." className="resize-none" disabled />
-                <div className="flex justify-end">
-                  <Button disabled>Comentar</Button>
-                </div>
-              </div>
-            }
-          >
+          <AuthCheck action="comentar neste projeto" fallback={<div className="flex flex-col space-y-2"><Textarea placeholder="Faça login para adicionar um comentário..." className="resize-none" disabled /><div className="flex justify-end"><Button disabled>Comentar</Button></div></div>}>
             <div className="flex flex-col space-y-2">
-              <Textarea
-                placeholder="Adicione um comentário..."
-                className="resize-none"
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-              />
+              <Textarea placeholder="Adicione um comentário..." className="resize-none" value={newComment} onChange={(e) => setNewComment(e.target.value)} disabled={!isAuthenticated} />
               <div className="flex justify-end">
-                <Button onClick={handleAddComment} disabled={!newComment.trim()}>
-                  Comentar
-                </Button>
+                <Button onClick={handleAddComment} disabled={!newComment.trim() || !isAuthenticated}>Comentar</Button>
               </div>
             </div>
           </AuthCheck>
         </CardContent>
       </Card>
 
-      {/* Lista de comentários */}
+      {comments.length === 0 && !isLoading && (
+        <Card className="rounded-xl glass-card"><CardContent className="p-6 text-center text-muted-foreground"><p>Nenhum comentário ainda. Seja o primeiro a comentar!</p></CardContent></Card>
+      )}
       <div className="space-y-4">
         {comments.map((comment) => (
           <div key={comment.id} className="space-y-4">
@@ -249,101 +290,37 @@ export default function ProjectComments() {
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-2">
                       <Avatar className="h-10 w-10 border border-border">
-                        <AvatarImage src={comment.author.avatar || "/placeholder.svg"} alt={comment.author.name} />
+                        <AvatarImage src={comment.author.avatar || "/placeholder-user.jpg"} alt={comment.author.name} />
                         <AvatarFallback>{comment.author.name.charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div>
                         <div className="font-medium">{comment.author.name}</div>
-                        <div className="text-xs text-muted-foreground flex items-center gap-2">
-                          <span>{comment.author.role}</span>
-                          <span>•</span>
-                          <span>{comment.createdAt}</span>
-                        </div>
+                        <div className="text-xs text-muted-foreground flex items-center gap-2"><span>{comment.author.role}</span><span>•</span><span>{comment.createdAt}</span></div>
                       </div>
                     </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Mais opções</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Reportar</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /><span className="sr-only">Mais opções</span></Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuItem>Reportar</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
                   </div>
-
                   <div className="text-sm">{comment.content}</div>
-
                   <div className="flex items-center gap-4 pt-1">
-                    <AuthCheck
-                      action="curtir este comentário"
-                      fallback={
-                        <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground">
-                          <ThumbsUp className="h-4 w-4 mr-1" />
-                          <span>{comment.likes}</span>
-                        </Button>
-                      }
-                      showDialog={false}
-                    >
-                      <Button
-                        variant={comment.isLiked ? "default" : "ghost"}
-                        size="sm"
-                        className="h-8 px-2"
-                        onClick={() => handleLikeComment(comment.id)}
-                      >
-                        <ThumbsUp className="h-4 w-4 mr-1" />
-                        <span>{comment.likes}</span>
-                      </Button>
+                    <AuthCheck action="curtir este comentário" fallback={<Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground" disabled><ThumbsUp className="h-4 w-4 mr-1" /><span>{comment.likes}</span></Button>} showDialog={false}>
+                      <Button variant={comment.isLiked ? "default" : "ghost"} size="sm" className="h-8 px-2" onClick={() => handleLikeComment(comment.id)} disabled={!isAuthenticated}><ThumbsUp className="h-4 w-4 mr-1" /><span>{comment.likes}</span></Button>
                     </AuthCheck>
-
-                    <AuthCheck
-                      action="responder a este comentário"
-                      fallback={
-                        <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground">
-                          <Reply className="h-4 w-4 mr-1" />
-                          <span>Responder</span>
-                        </Button>
-                      }
-                      showDialog={false}
-                    >
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 px-2"
-                        onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                      >
-                        <Reply className="h-4 w-4 mr-1" />
-                        <span>Responder</span>
-                      </Button>
+                    <AuthCheck action="responder a este comentário" fallback={<Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground" disabled><Reply className="h-4 w-4 mr-1" /><span>Responder</span></Button>} showDialog={false}>
+                      <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)} disabled={!isAuthenticated}><Reply className="h-4 w-4 mr-1" /><span>Responder</span></Button>
                     </AuthCheck>
                   </div>
-
-                  {/* Formulário de resposta */}
                   {replyingTo === comment.id && (
                     <div className="pt-2 pl-10 space-y-2">
-                      <Textarea
-                        placeholder="Adicione uma resposta..."
-                        className="resize-none text-sm"
-                        value={replyContent}
-                        onChange={(e) => setReplyContent(e.target.value)}
-                      />
+                      <Textarea placeholder="Adicione uma resposta..." className="resize-none text-sm" value={replyContent} onChange={(e) => setReplyContent(e.target.value)} disabled={!isAuthenticated} />
                       <div className="flex justify-end gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setReplyingTo(null)}>
-                          Cancelar
-                        </Button>
-                        <Button size="sm" onClick={() => handleAddReply(comment.id)} disabled={!replyContent.trim()}>
-                          Responder
-                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => setReplyingTo(null)}>Cancelar</Button>
+                        <Button size="sm" onClick={() => handleAddReply(comment.id)} disabled={!replyContent.trim() || !isAuthenticated}>Responder</Button>
                       </div>
                     </div>
                   )}
                 </div>
               </CardContent>
             </Card>
-
-            {/* Respostas */}
             {comment.replies && comment.replies.length > 0 && (
               <div className="pl-8 space-y-3">
                 {comment.replies.map((reply) => (
@@ -353,53 +330,20 @@ export default function ProjectComments() {
                         <div className="flex justify-between items-start">
                           <div className="flex items-center gap-2">
                             <Avatar className="h-8 w-8 border border-border">
-                              <AvatarImage src={reply.author.avatar || "/placeholder.svg"} alt={reply.author.name} />
+                              <AvatarImage src={reply.author.avatar || "/placeholder-user.jpg"} alt={reply.author.name} />
                               <AvatarFallback>{reply.author.name.charAt(0)}</AvatarFallback>
                             </Avatar>
                             <div>
                               <div className="font-medium text-sm">{reply.author.name}</div>
-                              <div className="text-xs text-muted-foreground flex items-center gap-2">
-                                <span>{reply.author.role}</span>
-                                <span>•</span>
-                                <span>{reply.createdAt}</span>
-                              </div>
+                              <div className="text-xs text-muted-foreground flex items-center gap-2"><span>{reply.author.role}</span><span>•</span><span>{reply.createdAt}</span></div>
                             </div>
                           </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-7 w-7">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Mais opções</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem>Reportar</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7"><MoreHorizontal className="h-4 w-4" /><span className="sr-only">Mais opções</span></Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuItem>Reportar</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
                         </div>
-
                         <div className="text-sm">{reply.content}</div>
-
                         <div className="flex items-center gap-4 pt-1">
-                          <AuthCheck
-                            action="curtir esta resposta"
-                            fallback={
-                              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground">
-                                <ThumbsUp className="h-3 w-3 mr-1" />
-                                <span>{reply.likes}</span>
-                              </Button>
-                            }
-                            showDialog={false}
-                          >
-                            <Button
-                              variant={reply.isLiked ? "default" : "ghost"}
-                              size="sm"
-                              className="h-7 px-2 text-xs"
-                              onClick={() => handleLikeComment(reply.id, true, comment.id)}
-                            >
-                              <ThumbsUp className="h-3 w-3 mr-1" />
-                              <span>{reply.likes}</span>
-                            </Button>
+                          <AuthCheck action="curtir esta resposta" fallback={<Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground" disabled><ThumbsUp className="h-3 w-3 mr-1" /><span>{reply.likes}</span></Button>} showDialog={false}>
+                            <Button variant={reply.isLiked ? "default" : "ghost"} size="sm" className="h-7 px-2 text-xs" onClick={() => handleLikeComment(reply.id, true, comment.id)} disabled={!isAuthenticated}><ThumbsUp className="h-3 w-3 mr-1" /><span>{reply.likes}</span></Button>
                           </AuthCheck>
                         </div>
                       </div>

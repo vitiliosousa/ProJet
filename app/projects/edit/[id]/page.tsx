@@ -150,8 +150,10 @@ export default function EditProjectPage() {
           setTags(foundProject.tags || [])
           setObjectives(foundProject.objectives || [])
         } else {
-          // Projeto não encontrado
-          router.push("/projects/my-projects")
+          // Projeto não encontrado - Por agora, não redirecionar para permitir que a página carregue.
+          // Em uma implementação completa, buscaria da API e lidaria com 404 de forma apropriada.
+          console.warn(`Projeto com ID ${projectId} não encontrado nos dados mock. A página de edição pode não funcionar como esperado até que a busca da API seja implementada.`)
+          // router.push("/projects/my-projects") // Comentado para evitar redirecionamento imediato
         }
       } catch (error) {
         console.error("Erro ao carregar projeto:", error)

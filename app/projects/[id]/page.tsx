@@ -12,75 +12,90 @@ import Link from "next/link"
 import AuthCheck from "@/components/auth-check"
 import ProjectComments from "@/components/project-comments"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { useAuth } from "@/components/auth-provider" // Importar useAuth
 
-// Mock project data
-const mockProject = {
-  id: 1,
-  title: "Sistema de Monitoramento Ambiental IoT",
-  description:
-    "Dispositivo IoT para monitoramento de qualidade do ar e água em tempo real, utilizando sensores de baixo custo e transmissão de dados via LoRaWAN.",
-  longDescription: `
-    Este projeto visa desenvolver um sistema completo de monitoramento ambiental utilizando tecnologia IoT (Internet das Coisas) para coletar, analisar e visualizar dados sobre qualidade do ar, água e outros parâmetros ambientais em tempo real.
-    
-    O sistema é composto por três componentes principais:
-    
-    1. Dispositivos de Sensoriamento: Unidades compactas equipadas com sensores de baixo custo para medir parâmetros como temperatura, umidade, concentração de CO2, material particulado (PM2.5 e PM10), pH da água, turbidez e presença de contaminantes específicos.
-    
-    2. Rede de Comunicação: Utiliza o protocolo LoRaWAN para transmissão de dados de longo alcance com baixo consumo de energia, permitindo que os dispositivos operem por meses com baterias simples ou painéis solares de pequeno porte.
-    
-    3. Plataforma de Visualização: Interface web e mobile que apresenta os dados coletados em dashboards intuitivos, com alertas configuráveis e análises históricas.
-    
-    O diferencial do projeto está na combinação de hardware de baixo custo com software avançado de análise, tornando o monitoramento ambiental acessível para municípios, empresas e instituições de ensino com orçamento limitado.
-    
-    Estágio atual: Protótipo funcional desenvolvido e testado em laboratório, com resultados preliminares promissores. Buscamos parceiros para testes em campo e investimento para produção em escala.
-  `,
-  area: "Engenharia Ambiental",
-  author: "Carlos Silva",
-  authorRole: "Estudante de Mestrado",
-  university: "Universidade Federal",
-  likes: 24,
-  views: 124,
-  createdAt: "10/05/2023",
-  status: "Em desenvolvimento",
-  images: [
-    "/placeholder.svg?height=400&width=600",
-    "/placeholder.svg?height=400&width=600",
-    "/placeholder.svg?height=400&width=600",
-  ],
-  tags: ["IoT", "Meio Ambiente", "Sensores", "Monitoramento", "LoRaWAN"],
-  objectives: [
-    "Desenvolver dispositivos de sensoriamento de baixo custo",
-    "Implementar rede LoRaWAN para transmissão de dados",
-    "Criar plataforma de visualização e análise de dados",
-    "Validar o sistema em ambientes reais",
-  ],
+// Interface para os dados do projeto (deve corresponder à API)
+interface ProjectData {
+  id: string
+  titulo_do_projeto: string
+  descricao_curta: string
+  descricao_completa: string
+  area_do_projeto: string
+  nome_completo_autor?: string // Assumindo que estes campos podem vir da API
+  universidade_autor?: string
+  status_do_projeto: string
+  imagem_principal?: string
+  imagens_adicionais?: string[] // Array de URLs de imagens
+  tags?: string[] // Array de strings
+  objetivos?: string[] // Array de strings
+  created_at: string // Data de criação/publicação
+  // Adicionar outros campos conforme necessário (ex: views, likes, etc., se vierem da API)
+  views?: number
+  likes?: number
+  // user_id para identificar o autor para mensagens, etc.
+  user_id?: string
 }
 
 export default function ProjectDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const projectId = params.id
-  const [liked, setLiked] = useState(false)
-  const [bookmarked, setBookmarked] = useState(false)
-  const [likeCount, setLikeCount] = useState(mockProject.likes)
-  const [activeImageIndex, setActiveImageIndex] = useState(0)
-  const [isAuthenticated, setIsAuthenticated] = useState(false) // Simulação - em produção, isso viria de um hook de autenticação
+  const { isAuthenticated, user } = useAuth() // Usar o hook de autenticação real
+  const projectId = params.id as string // Garantir que projectId é string
+
+  const [project, setProject] = useState<ProjectData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const [liked, setLiked] = useState(false) // Lógica de like pode precisar de API
+  const [bookmarked, setBookmarked] = useState(false) // Lógica de bookmark pode precisar de API
+  const [likeCount, setLikeCount] = useState(0)
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [activeTab, setActiveTab] = useState("description")
 
-  // Simulate loading
   useEffect(() => {
-    const timer = setTimeout(() => {
+    if (projectId) {
+      const fetchProjectDetails = async () => {
+        setIsLoading(true)
+        setError(null)
+        try {
+          const response = await fetch(`/api/projects/${projectId}`)
+          if (!response.ok) {
+            if (response.status === 404) {
+              throw new Error("Projeto não encontrado.")
+            }
+            throw new Error("Falha ao buscar detalhes do projeto.")
+          }
+          const data: ProjectData = await response.json()
+          setProject(data)
+          setLikeCount(data.likes || 0) // Inicializar likeCount se disponível
+          // Aqui você pode querer buscar o estado de 'liked' e 'bookmarked' para o usuário atual
+        } catch (err: any) {
+          console.error(err)
+          setError(err.message || "Ocorreu um erro.")
+        } finally {
+          setIsLoading(false)
+        }
+      }
+      fetchProjectDetails()
+    } else {
+      setError("ID do projeto não fornecido.")
       setIsLoading(false)
-    }, 1000)
-    return () => clearTimeout(timer)
-  }, [])
-
-  const handleLike = () => {
-    if (!isAuthenticated) {
-      return
     }
+  }, [projectId])
 
+  const handleLike = async () => { // A lógica de like deve interagir com a API
+    if (!isAuthenticated || !project) return
+
+    // Exemplo: Chamar uma API para dar like/unlike
+    // const newLikedState = !liked
+    // try {
+    //   await fetch(`/api/projects/${project.id}/like`, { method: newLikedState ? 'POST' : 'DELETE' });
+    //   setLiked(newLikedState);
+    //   setLikeCount(prev => newLikedState ? prev + 1 : prev - 1);
+    // } catch (error) {
+    //   console.error("Erro ao curtir:", error);
+    // }
+    // Por enquanto, simulação local:
     if (liked) {
       setLikeCount(likeCount - 1)
     } else {
@@ -89,13 +104,12 @@ export default function ProjectDetailPage() {
     setLiked(!liked)
   }
 
-  const handleBookmark = () => {
-    if (!isAuthenticated) {
-      return
-    }
-
+  const handleBookmark = async () => { // A lógica de bookmark deve interagir com a API
+    if (!isAuthenticated || !project) return
+    // Similar à lógica de like, chamar API
     setBookmarked(!bookmarked)
   }
+
 
   if (isLoading) {
     return (
@@ -124,6 +138,34 @@ export default function ProjectDetailPage() {
     )
   }
 
+  if (error) {
+    return (
+      <div className="container py-8 text-center">
+        <h1 className="text-2xl font-bold text-destructive mb-4">Erro</h1>
+        <p className="text-muted-foreground">{error}</p>
+        <Button onClick={() => router.push("/projects")} className="mt-4">
+          Voltar para Projetos
+        </Button>
+      </div>
+    )
+  }
+
+  if (!project) {
+    // Este caso pode não ser necessário se o isLoading cobrir,
+    // mas é uma boa prática ter um fallback.
+    return (
+      <div className="container py-8 text-center">
+        <p>Projeto não carregado.</p>
+      </div>
+    )
+  }
+
+  // Preparar imagens para a galeria (principal + adicionais)
+  const galleryImages = [
+    project.imagem_principal || "/placeholder.svg",
+    ...(project.imagens_adicionais || []),
+  ].filter(Boolean) // Remove undefined/null e strings vazias
+
   return (
     <div className="container py-8">
       <Link
@@ -138,13 +180,13 @@ export default function ProjectDetailPage() {
         {/* Main content - 2/3 width on desktop */}
         <div className="lg:col-span-2 space-y-6 animate-fadeIn">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight mb-2 gradient-heading">{mockProject.title}</h1>
+            <h1 className="text-3xl font-bold tracking-tight mb-2 gradient-heading">{project.titulo_do_projeto}</h1>
             <div className="flex flex-wrap gap-2 mb-4">
               <Badge variant="outline" className="gradient-border">
-                {mockProject.area}
+                {project.area_do_projeto}
               </Badge>
-              <Badge variant="secondary">{mockProject.status}</Badge>
-              {mockProject.tags.map((tag, index) => (
+              <Badge variant="secondary">{project.status_do_projeto}</Badge>
+              {(project.tags || []).map((tag, index) => (
                 <Badge key={index} variant="outline">
                   {tag}
                 </Badge>
@@ -153,48 +195,54 @@ export default function ProjectDetailPage() {
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-6">
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                <span>{mockProject.createdAt}</span>
+                <span>{new Date(project.created_at).toLocaleDateString()}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Eye className="h-4 w-4" />
-                <span>{mockProject.views} visualizações</span>
+                <span>{project.views || 0} visualizações</span>
               </div>
-              <div className="flex items-center gap-1">
-                <School className="h-4 w-4" />
-                <span>{mockProject.university}</span>
-              </div>
+              {project.universidade_autor && (
+                <div className="flex items-center gap-1">
+                  <School className="h-4 w-4" />
+                  <span>{project.universidade_autor}</span>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Image gallery */}
-          <div className="space-y-2">
-            <div className="overflow-hidden rounded-xl border shadow-sm">
-              <img
-                src={mockProject.images[activeImageIndex] || "/placeholder.svg"}
-                alt={`${mockProject.title} - Imagem ${activeImageIndex + 1}`}
-                className="w-full h-[400px] object-cover"
-              />
+          {galleryImages.length > 0 && (
+            <div className="space-y-2">
+              <div className="overflow-hidden rounded-xl border shadow-sm">
+                <img
+                  src={galleryImages[activeImageIndex]}
+                  alt={`${project.titulo_do_projeto} - Imagem ${activeImageIndex + 1}`}
+                  className="w-full h-[400px] object-cover"
+                />
+              </div>
+              {galleryImages.length > 1 && (
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+                  {galleryImages.map((image, index) => (
+                    <button
+                      key={index}
+                      className={`rounded-lg overflow-hidden border-2 transition-all ${
+                        index === activeImageIndex
+                          ? "border-primary scale-105"
+                          : "border-transparent opacity-70 hover:opacity-100"
+                      }`}
+                      onClick={() => setActiveImageIndex(index)}
+                    >
+                      <img
+                        src={image}
+                        alt={`Thumbnail ${index + 1}`}
+                        className="w-20 h-20 object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
-              {mockProject.images.map((image, index) => (
-                <button
-                  key={index}
-                  className={`rounded-lg overflow-hidden border-2 transition-all ${
-                    index === activeImageIndex
-                      ? "border-primary scale-105"
-                      : "border-transparent opacity-70 hover:opacity-100"
-                  }`}
-                  onClick={() => setActiveImageIndex(index)}
-                >
-                  <img
-                    src={image || "/placeholder.svg"}
-                    alt={`Thumbnail ${index + 1}`}
-                    className="w-20 h-20 object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
+          )}
 
           {/* Project details tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -213,11 +261,13 @@ export default function ProjectDetailPage() {
               <Card className="rounded-xl glass-card">
                 <CardContent className="p-6">
                   <div className="prose max-w-none dark:prose-invert">
-                    {mockProject.longDescription.split("\n\n").map((paragraph, index) => (
-                      <p key={index} className="mb-4">
-                        {paragraph}
-                      </p>
-                    ))}
+                    {(project.descricao_completa || project.descricao_curta || "Nenhuma descrição fornecida.")
+                      .split("\n\n")
+                      .map((paragraph, index) => (
+                        <p key={index} className="mb-4">
+                          {paragraph}
+                        </p>
+                      ))}
                   </div>
                 </CardContent>
               </Card>
@@ -225,21 +275,25 @@ export default function ProjectDetailPage() {
             <TabsContent value="objectives" className="mt-4 animate-fadeIn">
               <Card className="rounded-xl glass-card">
                 <CardContent className="p-6">
-                  <ul className="space-y-4">
-                    {mockProject.objectives.map((objective, index) => (
-                      <li key={index} className="flex items-start gap-3 group">
-                        <div className="rounded-full bg-primary/10 text-primary w-8 h-8 flex items-center justify-center mt-0.5 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                          {index + 1}
-                        </div>
-                        <span className="flex-1 pt-1">{objective}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  {(project.objetivos && project.objetivos.length > 0) ? (
+                    <ul className="space-y-4">
+                      {project.objetivos.map((objective, index) => (
+                        <li key={index} className="flex items-start gap-3 group">
+                          <div className="rounded-full bg-primary/10 text-primary w-8 h-8 flex items-center justify-center mt-0.5 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                            {index + 1}
+                          </div>
+                          <span className="flex-1 pt-1">{objective}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-muted-foreground">Nenhum objetivo específico listado para este projeto.</p>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
             <TabsContent value="comments" className="mt-4 animate-fadeIn">
-              <ProjectComments />
+              <ProjectComments projectId={project.id} /> {/* Passar projectId para ProjectComments */}
             </TabsContent>
           </Tabs>
         </div>
@@ -247,45 +301,53 @@ export default function ProjectDetailPage() {
         {/* Sidebar - 1/3 width on desktop */}
         <div className="space-y-6">
           {/* Author card */}
-          <Card className="rounded-xl glass-card animate-fadeIn" style={{ animationDelay: "0.1s" }}>
-            <CardContent className="p-6">
-              <div className="flex flex-col items-center text-center">
-                <Avatar className="h-24 w-24 mb-4 border-4 border-primary/20">
-                  <AvatarImage src="/placeholder.svg?height=96&width=96" alt={mockProject.author} />
-                  <AvatarFallback className="text-xl">{mockProject.author.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <h3 className="font-bold text-lg">{mockProject.author}</h3>
-                <p className="text-sm text-muted-foreground mb-2">{mockProject.authorRole}</p>
-                <p className="text-sm text-muted-foreground mb-4">{mockProject.university}</p>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AuthCheck
-                        action="entrar em contato"
-                        fallback={
-                          <Button className="w-full button-hover-effect">
+          {(project.nome_completo_autor || project.universidade_autor) && (
+            <Card className="rounded-xl glass-card animate-fadeIn" style={{ animationDelay: "0.1s" }}>
+              <CardContent className="p-6">
+                <div className="flex flex-col items-center text-center">
+                  <Avatar className="h-24 w-24 mb-4 border-4 border-primary/20">
+                    {/* Idealmente, o autor teria uma imagem de perfil */}
+                    <AvatarImage src={"/placeholder-user.jpg"} alt={project.nome_completo_autor || "Autor"} />
+                    <AvatarFallback className="text-xl">
+                      {(project.nome_completo_autor || "A").charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  {project.nome_completo_autor && <h3 className="font-bold text-lg">{project.nome_completo_autor}</h3>}
+                  {/* Poderia adicionar um campo 'papel_autor' se existir na API */}
+                  {/* <p className="text-sm text-muted-foreground mb-2">{project.authorRole}</p> */}
+                  {project.universidade_autor && <p className="text-sm text-muted-foreground mb-4">{project.universidade_autor}</p>}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <AuthCheck
+                          action="entrar em contato"
+                          fallback={
+                            <Button className="w-full button-hover-effect">
+                              <MessageSquare className="mr-2 h-4 w-4" />
+                              Entrar em Contato
+                            </Button>
+                          }
+                        >
+                          <Button
+                            className="w-full button-hover-effect"
+                            // A rota de mensagens pode precisar do ID do usuário autor, não apenas do nome
+                            onClick={() => router.push(`/messages?userId=${project.user_id || project.nome_completo_autor}&projectId=${project.id}`)}
+                            disabled={!project.user_id && !project.nome_completo_autor} // Desabilitar se não houver identificador do autor
+                          >
                             <MessageSquare className="mr-2 h-4 w-4" />
                             Entrar em Contato
                           </Button>
-                        }
-                      >
-                        <Button
-                          className="w-full button-hover-effect"
-                          onClick={() => router.push(`/messages?user=${mockProject.author}&project=${mockProject.id}`)}
-                        >
-                          <MessageSquare className="mr-2 h-4 w-4" />
-                          Entrar em Contato
-                        </Button>
-                      </AuthCheck>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Inicia uma conversa direta com o autor do projeto</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-            </CardContent>
-          </Card>
+                        </AuthCheck>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Inicia uma conversa direta com o autor do projeto</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Actions card */}
           <Card className="rounded-xl glass-card animate-fadeIn" style={{ animationDelay: "0.2s" }}>
@@ -295,9 +357,9 @@ export default function ProjectDetailPage() {
                 <div className="grid grid-cols-2 gap-2">
                   <AuthCheck
                     action="curtir este projeto"
-                    fallback={
-                      <Button variant="outline" onClick={() => {}} className="w-full button-hover-effect group">
-                        <Heart className="mr-2 h-4 w-4 group-hover:fill-primary/20 transition-all" />
+                    fallback={ // Mostrar apenas o contador se não autenticado
+                      <Button variant="outline" disabled className="w-full group">
+                        <Heart className="mr-2 h-4 w-4" />
                         {likeCount}
                       </Button>
                     }
@@ -315,8 +377,8 @@ export default function ProjectDetailPage() {
                   </AuthCheck>
                   <AuthCheck
                     action="favoritar este projeto"
-                    fallback={
-                      <Button variant="outline" onClick={() => {}} className="w-full button-hover-effect">
+                    fallback={ // Mostrar botão desabilitado se não autenticado
+                      <Button variant="outline" disabled className="w-full">
                         <BookmarkPlus className="mr-2 h-4 w-4" />
                         Favoritar
                       </Button>
@@ -328,7 +390,7 @@ export default function ProjectDetailPage() {
                       className="w-full button-hover-effect"
                     >
                       <BookmarkPlus className="mr-2 h-4 w-4" />
-                      Favoritar
+                      {bookmarked ? "Favoritado" : "Favoritar"}
                     </Button>
                   </AuthCheck>
                   <Button
@@ -339,7 +401,8 @@ export default function ProjectDetailPage() {
                     <MessageSquare className="mr-2 h-4 w-4" />
                     Comentar
                   </Button>
-                  <Button variant="outline" className="w-full col-span-2 button-hover-effect">
+                  {/* Funcionalidade de compartilhar pode ser implementada com navigator.share se disponível */}
+                  <Button variant="outline" className="w-full col-span-2 button-hover-effect" onClick={() => alert("Compartilhar (implementar)")}>
                     <Share className="mr-2 h-4 w-4" />
                     Compartilhar
                   </Button>

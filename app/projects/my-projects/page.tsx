@@ -153,7 +153,7 @@ export default function MyProjectsPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{projects.reduce((sum, project) => sum + (project.views ?? 0), 0)}</div>
+              <div className="text-2xl font-bold">{projects.reduce((sum, project) => sum + project.views, 0)}</div>
               <p className="text-xs text-muted-foreground">+24% desde o último mês</p>
             </CardContent>
           </Card>
@@ -163,7 +163,7 @@ export default function MyProjectsPage() {
               <Heart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{projects.reduce((sum, project) => sum + (project.likes ?? 0), 0)}</div>
+              <div className="text-2xl font-bold">{projects.reduce((sum, project) => sum + project.likes, 0)}</div>
               <p className="text-xs text-muted-foreground">+12% desde o último mês</p>
             </CardContent>
           </Card>
@@ -173,7 +173,7 @@ export default function MyProjectsPage() {
               <MessageSquare className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{projects.reduce((sum, project) => sum + (project.messages ?? 0), 0)}</div>
+              <div className="text-2xl font-bold">{projects.reduce((sum, project) => sum + project.messages, 0)}</div>
               <p className="text-xs text-muted-foreground">+3 novas mensagens</p>
             </CardContent>
           </Card>

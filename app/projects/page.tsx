@@ -252,7 +252,7 @@ export default function ProjectsPage() {
                   </CardTitle>
                   <div className="text-sm text-muted-foreground">
                     {/* project.author • project.university // Alterado para nome_completo_autor e universidade_autor */}
-                    {project.nome_completo_autor || "Vitilio Sousa"} • {project.universidade_autor || "ISUTC"}
+                    {project.nome_completo_autor || "Autor Desconhecido"} • {project.universidade_autor || "Universidade Desconhecida"}
                   </div>
                 </CardHeader>
                 <CardContent className="p-4 pt-0 flex-grow">
