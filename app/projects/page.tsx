@@ -12,9 +12,24 @@ import AuthCheck from "@/components/auth-check"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { useAuth } from "@/components/auth-provider"
-import mockProjects from "@/data/mockProjects"
+// import mockProjects from "@/data/mockProjects" // Removido mockProjects
 import areas from "@/data/areas"
 import Image from "next/image"
+
+// Definir a interface do Projeto
+interface Project {
+  id: string // Ou number, dependendo do tipo do ID no Supabase
+  titulo_do_projeto: string
+  descricao_curta: string
+  area_do_projeto: string
+  // Adicione outros campos conforme necessário para corresponder aos dados da API
+  // Exemplo: autor, universidade, likes, imagem_principal
+  nome_completo_autor?: string // Supondo que você tenha um campo para o nome do autor
+  universidade_autor?: string // Supondo que você tenha um campo para a universidade
+  likes?: number // Supondo um campo para likes
+  imagem_principal?: string // URL da imagem
+  created_at?: string // Para ordenação por recentes
+}
 
 
 export default function ProjectsPage() {
@@ -22,25 +37,39 @@ export default function ProjectsPage() {
   const [selectedArea, setSelectedArea] = useState("Todas as Áreas")
   const [sortBy, setSortBy] = useState("recent")
   const [isLoading, setIsLoading] = useState(true)
+  const [projects, setProjects] = useState<Project[]>([]) // Estado para armazenar projetos da API
   const isMobile = useMediaQuery("(max-width: 768px)")
   const { isAuthenticated } = useAuth()
 
-  // Simulate loading
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 800)
-    return () => clearTimeout(timer)
+    const fetchProjects = async () => {
+      setIsLoading(true)
+      try {
+        const response = await fetch("/api/projects")
+        if (!response.ok) {
+          throw new Error("Falha ao buscar projetos")
+        }
+        const data = await response.json()
+        setProjects(data)
+      } catch (error) {
+        console.error(error)
+        // Tratar erro, talvez mostrar uma mensagem para o usuário
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchProjects()
   }, [])
 
   // Filter projects based on search term and selected area
-  const filteredProjects = mockProjects.filter((project) => {
+  const filteredProjects = projects.filter((project) => {
     const matchesSearch =
-      project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.author.toLowerCase().includes(searchTerm.toLowerCase())
+      project.titulo_do_projeto.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      project.descricao_curta.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (project.nome_completo_autor && project.nome_completo_autor.toLowerCase().includes(searchTerm.toLowerCase()))
 
-    const matchesArea = selectedArea === "Todas as Áreas" || project.area === selectedArea
+    const matchesArea = selectedArea === "Todas as Áreas" || project.area_do_projeto === selectedArea
 
     return matchesSearch && matchesArea
   })
@@ -48,16 +77,17 @@ export default function ProjectsPage() {
   // Sort projects
   const sortedProjects = [...filteredProjects].sort((a, b) => {
     if (sortBy === "recent") {
-      return b.id - a.id // Assuming higher id means more recent
+      // Supondo que a API retorna 'created_at' ou um campo similar para data de criação
+      return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
     } else if (sortBy === "popular") {
-      return b.likes - a.likes
+      return (b.likes || 0) - (a.likes || 0)
     } else if (sortBy === "alphabetical") {
-      return a.title.localeCompare(b.title)
+      return a.titulo_do_projeto.localeCompare(b.titulo_do_projeto)
     }
     return 0
   })
 
-  const handleLike = (id: number) => {
+  const handleLike = (id: string) => { // ID pode ser string
     // Em uma aplicação real, isso redirecionaria para o login se não estiver autenticado
     if (!isAuthenticated) {
       return
@@ -205,26 +235,28 @@ export default function ProjectsPage() {
               >
                 <div className="relative overflow-hidden group">
                   <Image
-                    src={project.image}
-                    alt={project.title}
+                    // src={project.image} // Alterado para imagem_principal ou placeholder
+                    src={project.imagem_principal || "/placeholder.jpg"} // Usar placeholder se não houver imagem
+                    alt={project.titulo_do_projeto}
                     width={500}
                     height={300}
                     className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
                     priority={index < 6}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <Badge className="absolute top-2 right-2 z-10">{project.area}</Badge>
+                  <Badge className="absolute top-2 right-2 z-10">{project.area_do_projeto}</Badge>
                 </div>
                 <CardHeader className="p-4">
                   <CardTitle className="line-clamp-2 text-xl group-hover:text-primary transition-colors">
-                    {project.title}
+                    {project.titulo_do_projeto}
                   </CardTitle>
                   <div className="text-sm text-muted-foreground">
-                    {project.author} • {project.university}
+                    {/* project.author • project.university // Alterado para nome_completo_autor e universidade_autor */}
+                    {project.nome_completo_autor || "Autor Desconhecido"} • {project.universidade_autor || "Universidade Desconhecida"}
                   </div>
                 </CardHeader>
                 <CardContent className="p-4 pt-0 flex-grow">
-                  <p className="text-sm text-muted-foreground line-clamp-3">{project.description}</p>
+                  <p className="text-sm text-muted-foreground line-clamp-3">{project.descricao_curta}</p>
                 </CardContent>
                 <CardFooter className="p-4 pt-0 flex justify-between">
                   <AuthCheck

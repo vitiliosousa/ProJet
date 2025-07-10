@@ -56,3 +56,19 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Erro no servidor.' }, { status: 500 })
   }
 }
+
+export async function GET() {
+  try {
+    const { data, error } = await supabase.from('project').select('*')
+
+    if (error) {
+      console.error('Erro ao buscar projetos no Supabase:', error)
+      return NextResponse.json({ error: 'Erro ao buscar projetos.' }, { status: 500 })
+    }
+
+    return NextResponse.json(data, { status: 200 })
+  } catch (err) {
+    console.error('Erro inesperado:', err)
+    return NextResponse.json({ error: 'Erro no servidor.' }, { status: 500 })
+  }
+}
