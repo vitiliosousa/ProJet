@@ -180,12 +180,12 @@ export default function ProjectDetailPage() {
         {/* Main content - 2/3 width on desktop */}
         <div className="lg:col-span-2 space-y-6 animate-fadeIn">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight mb-2 gradient-heading">{project.titulo_do_projeto}</h1>
+            <h1 className="text-3xl font-bold tracking-tight mb-2 gradient-heading">{project.titulo_do_projeto} <Badge variant="secondary">{project.status_do_projeto}</Badge>
+              </h1>
             <div className="flex flex-wrap gap-2 mb-4">
               <Badge variant="outline" className="gradient-border">
                 {project.area_do_projeto}
               </Badge>
-              <Badge variant="secondary">{project.status_do_projeto}</Badge>
               {(project.tags || []).map((tag, index) => (
                 <Badge key={index} variant="outline">
                   {tag}
@@ -209,8 +209,6 @@ export default function ProjectDetailPage() {
               )}
             </div>
           </div>
-
-          {/* Image gallery */}
           {galleryImages.length > 0 && (
             <div className="space-y-2">
               <div className="overflow-hidden rounded-xl border shadow-sm">
@@ -243,8 +241,6 @@ export default function ProjectDetailPage() {
               )}
             </div>
           )}
-
-          {/* Project details tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3 rounded-xl">
               <TabsTrigger value="description" className="rounded-lg">

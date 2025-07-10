@@ -1,115 +1,43 @@
-"use client"
+'use client'
 
-import type React from "react"
-
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { useParams, useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowLeft, X, Upload, Loader2 } from "lucide-react"
-import { useAuth } from "@/components/auth-provider"
+import type React from 'react'
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { useParams, useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ArrowLeft, X, Upload, Loader2 } from 'lucide-react'
+import { useAuth } from '@/components/auth-provider'
+import { toast } from '@/components/ui/use-toast'
 
 // Areas for project
 const areas = [
-  "Engenharia Ambiental",
-  "Ciência da Computação",
-  "Administração",
-  "Engenharia de Software",
-  "Engenharia Civil",
-  "Tecnologia Educacional",
-  "Medicina",
-  "Arquitetura",
-  "Design",
-  "Economia",
-  "Outro",
+  'Engenharia Ambiental',
+  'Ciência da Computação',
+  'Administração',
+  'Engenharia de Software',
+  'Engenharia Civil',
+  'Tecnologia Educacional',
+  'Medicina',
+  'Arquitetura',
+  'Design',
+  'Economia',
+  'Outro',
 ]
 
-// Mock project data for editing
-const mockProjects = [
-  {
-    id: "1",
-    title: "Sistema de Monitoramento Ambiental IoT",
-    area: "Engenharia Ambiental",
-    shortDescription:
-      "Dispositivo IoT para monitoramento de qualidade do ar e água em tempo real, utilizando sensores de baixo custo e transmissão de dados via LoRaWAN.",
-    fullDescription: `Este projeto visa desenvolver um sistema completo de monitoramento ambiental utilizando tecnologia IoT (Internet das Coisas) para coletar, analisar e visualizar dados sobre qualidade do ar, água e outros parâmetros ambientais em tempo real.
-    
-O sistema é composto por três componentes principais:
-
-1. Dispositivos de Sensoriamento: Unidades compactas equipadas com sensores de baixo custo para medir parâmetros como temperatura, umidade, concentração de CO2, material particulado (PM2.5 e PM10), pH da água, turbidez e presença de contaminantes específicos.
-
-2. Rede de Comunicação: Utiliza o protocolo LoRaWAN para transmissão de dados de longo alcance com baixo consumo de energia, permitindo que os dispositivos operem por meses com baterias simples ou painéis solares de pequeno porte.
-
-3. Plataforma de Visualização: Interface web e mobile que apresenta os dados coletados em dashboards intuitivos, com alertas configuráveis e análises históricas.
-
-O diferencial do projeto está na combinação de hardware de baixo custo com software avançado de análise, tornando o monitoramento ambiental acessível para municípios, empresas e instituições de ensino com orçamento limitado.`,
-    tags: ["IoT", "Meio Ambiente", "Sensores", "Monitoramento", "LoRaWAN"],
-    objectives: [
-      "Desenvolver dispositivos de sensoriamento de baixo custo",
-      "Implementar rede LoRaWAN para transmissão de dados",
-      "Criar plataforma de visualização e análise de dados",
-      "Validar o sistema em ambientes reais",
-    ],
-    status: "development",
-    images: ["/placeholder.svg?height=400&width=600"],
-  },
-  {
-    id: "2",
-    title: "Aplicativo de Assistência Médica para Idosos",
-    area: "Ciência da Computação",
-    shortDescription:
-      "Plataforma mobile que auxilia idosos no gerenciamento de medicamentos, consultas médicas e monitoramento de sinais vitais com interface simplificada.",
-    fullDescription: `Este aplicativo foi desenvolvido pensando nas necessidades específicas da população idosa, oferecendo uma interface simplificada e acessível para o gerenciamento de saúde.
-
-Principais funcionalidades:
-- Lembretes de medicamentos com confirmação de uso
-- Agendamento e lembretes de consultas médicas
-- Registro de sinais vitais como pressão arterial, glicemia e frequência cardíaca
-- Integração com dispositivos wearables para monitoramento contínuo
-- Botão de emergência com envio de localização para contatos cadastrados
-- Relatórios de saúde para compartilhamento com médicos e cuidadores
-
-O aplicativo foi testado com um grupo de 50 idosos e recebeu feedback positivo quanto à facilidade de uso e utilidade das funcionalidades.`,
-    tags: ["Saúde", "Mobile", "Acessibilidade", "Idosos"],
-    objectives: [
-      "Desenvolver interface simplificada e acessível",
-      "Implementar sistema de lembretes de medicamentos",
-      "Criar funcionalidade de monitoramento de sinais vitais",
-      "Integrar com dispositivos wearables",
-    ],
-    status: "planning",
-    images: ["/placeholder.svg?height=400&width=600"],
-  },
-  {
-    id: "3",
-    title: "Plataforma de Microcrédito para Pequenos Empreendedores",
-    area: "Administração",
-    shortDescription:
-      "Sistema financeiro que conecta investidores a pequenos empreendedores locais, facilitando o acesso a microcrédito com taxas justas.",
-    fullDescription: `Esta plataforma visa democratizar o acesso ao crédito para pequenos empreendedores que normalmente não conseguem financiamento através dos canais tradicionais.
-
-O sistema funciona como um marketplace que conecta diretamente investidores a empreendedores, eliminando intermediários e reduzindo custos. Os empreendedores cadastram seus projetos, necessidades de financiamento e planos de negócio. Investidores podem navegar pelos projetos, avaliar riscos e retornos potenciais, e decidir quanto desejam investir em cada negócio.
-
-A plataforma utiliza um algoritmo proprietário de análise de risco que considera fatores alternativos aos utilizados por bancos tradicionais, como histórico de vendas, avaliações de clientes e potencial de crescimento do negócio.
-
-Um sistema de escrow garante a segurança das transações, liberando os recursos conforme marcos pré-estabelecidos são atingidos pelo empreendedor.`,
-    tags: ["Finanças", "Microcrédito", "Empreendedorismo", "Marketplace"],
-    objectives: [
-      "Desenvolver plataforma segura para transações financeiras",
-      "Implementar algoritmo de análise de risco alternativo",
-      "Criar sistema de escrow para liberação gradual de recursos",
-      "Estabelecer mecanismos de feedback e avaliação",
-    ],
-    status: "development",
-    images: ["/placeholder.svg?height=400&width=600"],
-  },
-]
+// Use the correct field names from the database
+const initialFormData = {
+  titulo_do_projeto: '',
+  area_do_projeto: '',
+  descricao_curta: '',
+  descricao_completa: '',
+  status_do_projeto: '',
+}
 
 export default function EditProjectPage() {
   const router = useRouter()
@@ -118,57 +46,76 @@ export default function EditProjectPage() {
   const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [project, setProject] = useState<any>(null)
+  const [project, setProject] = useState<any>(null) // Keep original project data
+  const [formData, setFormData] = useState(initialFormData)
   const [tags, setTags] = useState<string[]>([])
-  const [tagInput, setTagInput] = useState("")
+  const [tagInput, setTagInput] = useState('')
   const [objectives, setObjectives] = useState<string[]>([])
-  const [objectiveInput, setObjectiveInput] = useState("")
-  const [activeTab, setActiveTab] = useState("basic")
+  const [objectiveInput, setObjectiveInput] = useState('')
+  const [activeTab, setActiveTab] = useState('basic')
 
-  // Redirecionar para login se não estiver autenticado
+  // Redirect to login if not authenticated
   useEffect(() => {
     if (!user) {
-      router.push("/login")
+      router.push('/login')
     }
   }, [user, router])
 
-  if (!user) {
-    return null
-  }
-
-  // Simular carregamento dos dados do projeto
+  // Fetch project data from the API
   useEffect(() => {
     const loadProject = async () => {
+      if (!projectId) return
       setIsLoading(true)
       try {
-        // Simulação de chamada à API
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-        const foundProject = mockProjects.find((p) => p.id === projectId)
-
-        if (foundProject) {
-          setProject(foundProject)
-          setTags(foundProject.tags || [])
-          setObjectives(foundProject.objectives || [])
-        } else {
-          // Projeto não encontrado - Por agora, não redirecionar para permitir que a página carregue.
-          // Em uma implementação completa, buscaria da API e lidaria com 404 de forma apropriada.
-          console.warn(`Projeto com ID ${projectId} não encontrado nos dados mock. A página de edição pode não funcionar como esperado até que a busca da API seja implementada.`)
-          // router.push("/projects/my-projects") // Comentado para evitar redirecionamento imediato
+        const response = await fetch(`/api/projects/${projectId}`)
+        if (!response.ok) {
+          throw new Error('Falha ao carregar o projeto.')
         }
+        const data = await response.json()
+        setProject(data)
+        // Populate form data with fetched data using correct keys
+        setFormData({
+          titulo_do_projeto: data.titulo_do_projeto || '',
+          area_do_projeto: data.area_do_projeto || '',
+          descricao_curta: data.descricao_curta || '',
+          descricao_completa: data.descricao_completa || '',
+          status_do_projeto: data.status_do_projeto || '',
+        })
+        setTags(data.tags || [])
+        setObjectives(data.objetivos || []) // Corrected from data.objectives
       } catch (error) {
-        console.error("Erro ao carregar projeto:", error)
+        console.error('Erro ao carregar projeto:', error)
+        toast({
+          title: 'Erro',
+          description: 'Não foi possível carregar os dados do projeto. Tente novamente.',
+          variant: 'destructive',
+        })
+        setProject(null) // Ensure 'not found' screen is shown
       } finally {
         setIsLoading(false)
       }
     }
 
     loadProject()
-  }, [projectId, router])
+  }, [projectId])
+
+  if (!user) {
+    return null
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
 
   const handleAddTag = () => {
     if (tagInput.trim() && !tags.includes(tagInput.trim())) {
       setTags([...tags, tagInput.trim()])
-      setTagInput("")
+      setTagInput('')
     }
   }
 
@@ -179,7 +126,7 @@ export default function EditProjectPage() {
   const handleAddObjective = () => {
     if (objectiveInput.trim() && !objectives.includes(objectiveInput.trim())) {
       setObjectives([...objectives, objectiveInput.trim()])
-      setObjectiveInput("")
+      setObjectiveInput('')
     }
   }
 
@@ -191,11 +138,42 @@ export default function EditProjectPage() {
     event.preventDefault()
     setIsSaving(true)
 
-    // Simulate project update
-    setTimeout(() => {
+    const updatedData = {
+      ...formData,
+      tags,
+      objetivos: objectives, // Corrected from 'objectives'
+    }
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedData),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('API Error:', errorData)
+        throw new Error('Falha ao atualizar o projeto.')
+      }
+
+      toast({
+        title: 'Sucesso!',
+        description: 'Seu projeto foi atualizado.',
+      })
+      router.push('/projects/my-projects')
+    } catch (error) {
+      console.error('Erro ao salvar projeto:', error)
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível salvar as alterações. Tente novamente.',
+        variant: 'destructive',
+      })
+    } finally {
       setIsSaving(false)
-      router.push("/projects/my-projects")
-    }, 1500)
+    }
   }
 
   if (isLoading) {
@@ -212,7 +190,9 @@ export default function EditProjectPage() {
       <div className="container max-w-4xl py-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Projeto não encontrado</h1>
-          <p className="text-muted-foreground mb-6">O projeto que você está tentando editar não existe.</p>
+          <p className="text-muted-foreground mb-6">
+            O projeto que você está tentando editar não existe ou não pôde ser carregado.
+          </p>
           <Link href="/projects/my-projects">
             <Button>Voltar para Meus Projetos</Button>
           </Link>
@@ -255,18 +235,25 @@ export default function EditProjectPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="title">Título do Projeto *</Label>
+                    <Label htmlFor="titulo_do_projeto">Título do Projeto *</Label>
                     <Input
-                      id="title"
+                      id="titulo_do_projeto"
+                      name="titulo_do_projeto"
                       placeholder="Ex: Sistema de Monitoramento Ambiental IoT"
                       required
-                      defaultValue={project.title}
+                      value={formData.titulo_do_projeto}
+                      onChange={handleInputChange}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="area">Área do Projeto *</Label>
-                    <Select defaultValue={project.area} required>
+                    <Label htmlFor="area_do_projeto">Área do Projeto *</Label>
+                    <Select
+                      name="area_do_projeto"
+                      value={formData.area_do_projeto}
+                      onValueChange={(value) => handleSelectChange('area_do_projeto', value)}
+                      required
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione uma área" />
                       </SelectTrigger>
@@ -281,13 +268,15 @@ export default function EditProjectPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="shortDescription">Descrição Curta *</Label>
+                    <Label htmlFor="descricao_curta">Descrição Curta *</Label>
                     <Textarea
-                      id="shortDescription"
+                      id="descricao_curta"
+                      name="descricao_curta"
                       placeholder="Descreva seu projeto em poucas palavras (máx. 200 caracteres)"
                       maxLength={200}
                       required
-                      defaultValue={project.shortDescription}
+                      value={formData.descricao_curta}
+                      onChange={handleInputChange}
                     />
                     <p className="text-xs text-muted-foreground">Esta descrição será exibida nos cards de projetos</p>
                   </div>
@@ -301,7 +290,7 @@ export default function EditProjectPage() {
                         value={tagInput}
                         onChange={(e) => setTagInput(e.target.value)}
                         onKeyDown={(e) => {
-                          if (e.key === "Enter") {
+                          if (e.key === 'Enter') {
                             e.preventDefault()
                             handleAddTag()
                           }
@@ -331,10 +320,10 @@ export default function EditProjectPage() {
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-between">
-                  <Button variant="outline" type="button" onClick={() => router.push("/projects/my-projects")}>
+                  <Button variant="outline" type="button" onClick={() => router.push('/projects/my-projects')}>
                     Cancelar
                   </Button>
-                  <Button type="button" onClick={() => setActiveTab("details")}>
+                  <Button type="button" onClick={() => setActiveTab('details')}>
                     Próximo
                   </Button>
                 </CardFooter>
@@ -349,13 +338,15 @@ export default function EditProjectPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="fullDescription">Descrição Completa *</Label>
+                    <Label htmlFor="descricao_completa">Descrição Completa *</Label>
                     <Textarea
-                      id="fullDescription"
+                      id="descricao_completa"
+                      name="descricao_completa"
                       placeholder="Descreva seu projeto em detalhes"
                       className="min-h-[200px]"
                       required
-                      defaultValue={project.fullDescription}
+                      value={formData.descricao_completa}
+                      onChange={handleInputChange}
                     />
                   </div>
 
@@ -368,7 +359,7 @@ export default function EditProjectPage() {
                         value={objectiveInput}
                         onChange={(e) => setObjectiveInput(e.target.value)}
                         onKeyDown={(e) => {
-                          if (e.key === "Enter") {
+                          if (e.key === 'Enter') {
                             e.preventDefault()
                             handleAddObjective()
                           }
@@ -398,8 +389,13 @@ export default function EditProjectPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="status">Status do Projeto *</Label>
-                    <Select defaultValue={project.status} required>
+                    <Label htmlFor="status_do_projeto">Status do Projeto *</Label>
+                    <Select
+                      name="status_do_projeto"
+                      value={formData.status_do_projeto}
+                      onValueChange={(value) => handleSelectChange('status_do_projeto', value)}
+                      required
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o status" />
                       </SelectTrigger>
@@ -414,10 +410,10 @@ export default function EditProjectPage() {
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-between">
-                  <Button variant="outline" type="button" onClick={() => setActiveTab("basic")}>
+                  <Button variant="outline" type="button" onClick={() => setActiveTab('basic')}>
                     Anterior
                   </Button>
-                  <Button type="button" onClick={() => setActiveTab("media")}>
+                  <Button type="button" onClick={() => setActiveTab('media')}>
                     Próximo
                   </Button>
                 </CardFooter>
@@ -437,7 +433,7 @@ export default function EditProjectPage() {
                       <div className="border rounded-lg p-2">
                         <p className="text-sm font-medium mb-2">Imagem atual:</p>
                         <img
-                          src={project.images[0] || "/placeholder.svg"}
+                          src={project.imagem_principal || '/placeholder.svg'}
                           alt="Imagem atual do projeto"
                           className="w-full h-48 object-cover rounded-md"
                         />
@@ -453,7 +449,7 @@ export default function EditProjectPage() {
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => document.getElementById("main-image")?.click()}
+                          onClick={() => document.getElementById('main-image')?.click()}
                         >
                           Selecionar Arquivo
                         </Button>
@@ -461,48 +457,14 @@ export default function EditProjectPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label>Imagens Adicionais</Label>
-                    <div className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center gap-2">
-                      <Upload className="h-8 w-8 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">Arraste e solte imagens ou clique para selecionar</p>
-                      <p className="text-xs text-muted-foreground">PNG, JPG ou GIF (máx. 5MB cada, até 5 imagens)</p>
-                      <Input type="file" accept="image/*" multiple className="hidden" id="additional-images" />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => document.getElementById("additional-images")?.click()}
-                      >
-                        Selecionar Arquivos
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Documentos Complementares</Label>
-                    <div className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center gap-2">
-                      <Upload className="h-8 w-8 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">Adicione documentos complementares ao seu projeto</p>
-                      <p className="text-xs text-muted-foreground">PDF, DOCX, PPTX (máx. 10MB cada)</p>
-                      <Input type="file" accept=".pdf,.docx,.pptx" multiple className="hidden" id="documents" />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => document.getElementById("documents")?.click()}
-                      >
-                        Selecionar Arquivos
-                      </Button>
-                    </div>
-                  </div>
+                  {/* Funcionalidade de upload de imagens adicionais e documentos pode ser implementada aqui */}
                 </CardContent>
                 <CardFooter className="flex justify-between">
-                  <Button variant="outline" type="button" onClick={() => setActiveTab("details")}>
+                  <Button variant="outline" type="button" onClick={() => setActiveTab('details')}>
                     Anterior
                   </Button>
                   <Button type="submit" disabled={isSaving}>
-                    {isSaving ? "Salvando..." : "Salvar Alterações"}
+                    {isSaving ? 'Salvando...' : 'Salvar Alterações'}
                   </Button>
                 </CardFooter>
               </Card>

@@ -157,8 +157,6 @@ export default function ProjectsPage() {
             que podem transformar o futuro.
           </p>
         </div>
-
-        {/* Search and filters */}
         <div
           className="flex flex-col gap-4 md:flex-row md:items-center animate-fadeIn"
           style={{ animationDelay: "0.1s" }}
@@ -235,8 +233,7 @@ export default function ProjectsPage() {
               >
                 <div className="relative overflow-hidden group">
                   <Image
-                    // src={project.image} // Alterado para imagem_principal ou placeholder
-                    src={project.imagem_principal || "/placeholder.jpg"} // Usar placeholder se não houver imagem
+                    src={project.imagem_principal || "/placeholder.jpg"}
                     alt={project.titulo_do_projeto}
                     width={500}
                     height={300}
@@ -251,8 +248,7 @@ export default function ProjectsPage() {
                     {project.titulo_do_projeto}
                   </CardTitle>
                   <div className="text-sm text-muted-foreground">
-                    {/* project.author • project.university // Alterado para nome_completo_autor e universidade_autor */}
-                    {project.nome_completo_autor || "Autor Desconhecido"} • {project.universidade_autor || "Universidade Desconhecida"}
+                    {project.nome_completo_autor || "Vitilio Sousa"} • {project.universidade_autor || "ISUTC"}
                   </div>
                 </CardHeader>
                 <CardContent className="p-4 pt-0 flex-grow">
