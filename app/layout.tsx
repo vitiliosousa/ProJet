@@ -3,7 +3,6 @@ import { Poppins } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import Header from "@/components/header"
-import Footer from "@/components/footer"
 import { AuthProvider } from "@/components/auth-provider"
 
 const inter = Poppins({ subsets: ["latin"], weight:["400"] })
@@ -30,7 +29,6 @@ export default function RootLayout({
             <div className="flex min-h-screen flex-col">
               <Header />
               <main className="flex-1 px-6">{children}</main>
-              <Footer />
             </div>
           </AuthProvider>
         </ThemeProvider>
