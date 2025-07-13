@@ -1,13 +1,14 @@
 const areas = [
-    "Todas as Áreas",
-    "Engenharia Ambiental",
-    "Ciência da Computação",
-    "Administração",
-    "Engenharia de Software",
-    "Engenharia Civil",
-    "Tecnologia Educacional",
-    "Medicina",
-    "Agronomia",
-  ]
+  "Todas as Áreas",
+  "Tecnologia e Computação",
+  "Engenharias e Ciências Exatas",
+  "Ciências da Saúde e Biológicas",
+  "Ciências Sociais e Humanas",
+  "Negócios e Empreendedorismo",
+  "Artes e Design",
+  "Educação",
+  "Ciências Agrárias e Ambientais",
+  "Outras Áreas",
+]
 
-  export default areas
+export default areas

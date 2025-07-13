@@ -1,34 +1,21 @@
-"use client"
+'use client'
 
-import type React from "react"
-import { useState, useRef } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowLeft, X, Upload, Paperclip } from "lucide-react"
-import { useAuth } from "@/components/auth-provider"
-import { supabase } from "@/lib/supabase"
-
-const areas = [
-  "Engenharia Ambiental",
-  "Ciência da Computação",
-  "Administração",
-  "Engenharia de Software",
-  "Engenharia Civil",
-  "Tecnologia Educacional",
-  "Medicina",
-  "Arquitetura",
-  "Design",
-  "Economia",
-  "Outro",
-]
+import type React from 'react'
+import { useState, useRef } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ArrowLeft, X, Upload, Paperclip } from 'lucide-react'
+import { useAuth } from '@/components/auth-provider'
+import { supabase } from '@/lib/supabase'
+import areas from '@/data/areas' // Import the updated areas list
 
 export default function NewProjectPage() {
   const router = useRouter()
@@ -286,7 +273,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                         <SelectValue placeholder="Selecione uma área" />
                       </SelectTrigger>
                       <SelectContent>
-                        {areas.map((area) => (
+                        {areas.filter(a => a !== "Todas as Áreas").map((area) => (
                           <SelectItem key={area} value={area}>
                             {area}
                           </SelectItem>

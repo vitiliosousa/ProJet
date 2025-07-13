@@ -37,7 +37,7 @@ export default function ProjectsPage() {
   const [selectedArea, setSelectedArea] = useState("Todas as Áreas")
   const [sortBy, setSortBy] = useState("recent")
   const [isLoading, setIsLoading] = useState(true)
-  const [projects, setProjects] = useState<Project[]>([]) // Estado para armazenar projetos da API
+  const [projects, setProjects] = useState<Project[]>([])
   const isMobile = useMediaQuery("(max-width: 768px)")
   const { isAuthenticated } = useAuth()
 

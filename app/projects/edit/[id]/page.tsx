@@ -14,21 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ArrowLeft, X, Upload, Loader2 } from 'lucide-react'
 import { useAuth } from '@/components/auth-provider'
 import { toast } from '@/components/ui/use-toast'
-
-// Areas for project
-const areas = [
-  'Engenharia Ambiental',
-  'Ciência da Computação',
-  'Administração',
-  'Engenharia de Software',
-  'Engenharia Civil',
-  'Tecnologia Educacional',
-  'Medicina',
-  'Arquitetura',
-  'Design',
-  'Economia',
-  'Outro',
-]
+import areas from '@/data/areas' // Import the updated areas list
 
 // Use the correct field names from the database
 const initialFormData = {
